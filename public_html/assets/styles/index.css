@@ -1,0 +1,154 @@
+:root{
+    font-size: 16px;
+    --niceColor: #04d87e;
+    --badColor: #f94646;
+    --borderColor: #d6d6d6;
+    --darkGrey: #3d4242;
+}
+html,body{
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+body{
+    background-color: whitesmoke;
+    font-family: sans-serif;
+    margin: 0;
+    margin-bottom: 5em;
+    width: 100%;
+}
+.connectionStatus{
+    width: .75rem;
+    height: .75rem;
+    border-radius: 50%;
+}
+.disconnected{
+    background-color: red;
+    border: 0.1em rgba(255, 0, 0, 0.5) solid;
+}
+.connected{
+    background-color: #1eff00;
+    border: 0.1em rgba(30, 255, 0, 0.5) solid;
+}
+
+#mainTitle{
+    text-align: center;
+    margin:0;
+    padding: .25em;
+    background-color: var(--darkGrey);
+    color: white;
+}
+
+
+#chatNavigation{
+    font-size: 16px;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    padding: .75em;
+    background-color: var(--darkGrey);
+}
+#chatNavigation button{
+    font-size: 1em;
+    padding: .25em 1em;
+    border: none;
+    border-radius: .2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .15s;
+}
+#chatNavigation button:hover,
+#chatNavigation button:active{
+    opacity: .85;
+}
+button#connectBtn{
+    background-color: var(--niceColor);
+    color: white;
+}
+button#disconnectBtn{
+    background-color: var(--badColor);
+    color: white;
+}
+input#userName{
+    padding: .25em .35em;
+    border: none;
+    border-radius: .2em;
+    font-size: 1em;
+    outline: none;
+}
+
+
+#connectedUsers{
+    display: none;
+    padding: 0em 1em;
+}
+#connectedUsers > ul{
+    text-decoration: none;
+    list-style: none;
+    width: 100%;
+}
+#connectedUsers > ul > li{
+    margin-bottom: .5em;
+}
+
+#content{
+    padding: 0 1em;
+}
+
+
+
+#chat{
+    background-color: white;
+    height: 350px;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    border: .1em var(--borderColor) solid;
+    border-radius: .25em;
+    overflow:auto;
+    padding: .5em;
+}
+#chat > div{
+    background-color: #c4e2ff;
+    margin-top: .5em;
+    margin-bottom: .5em;
+    padding: .5em;
+    border-radius: .5em;
+    width: fit-content;
+}
+
+
+#chatForm{
+    display: flex;
+    flex-flow: row;
+}
+#chatForm > input,
+#chatForm > textarea{
+    width: 100%;
+    resize: none;
+    border: .1em var(--borderColor) solid;
+    border-radius: .5em;
+}
+#chatForm textarea{
+    font-size: 1em;
+    outline: none;
+    padding: .5em;
+    width: 89%;
+    margin-right: 1%;
+}
+#chatForm input[type="submit"]{
+    background-color: var(--niceColor);
+    color: white;
+    font-weight: bold;
+    font-size: 1em;
+    padding: .5em;
+    transition: .15s;
+    cursor: pointer;
+    width: 10%;
+    border: none;
+}
+#chatForm input[type="submit"]:hover,
+#chatForm input[type="submit"]:active{
+    opacity: .8;
+    transition: .15s;
+}
