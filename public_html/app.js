@@ -37,8 +37,8 @@ function connect(){
         alert("Debe escribir su nombre.");
         return;
     }
-    const server = "https://gma-chat.herokuapp.com";//192.168.1.23:3000
-    socket = new WebSocket(`ws://${server}/`);
+    const server = "wss://gma-chat.herokuapp.com/";//192.168.1.23:3000
+    socket = new WebSocket(server);
     socket.onopen = (e)=>{
         connectedStatus();
         const data = JSON.stringify({
