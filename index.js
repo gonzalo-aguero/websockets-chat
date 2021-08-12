@@ -25,7 +25,6 @@ wsServer.on('request', (req)=>{
     const _remoteAddress = _connection.remoteAddress;
     connections.push(_connection);
     console.log(`New client connected at ${functions.useDate()} ---> ${_remoteAddress}`);
-    // notifyConnectedUsers(_connection);
     
     //Event when receiving a new message.
     _connection.on("message", (message)=>{
@@ -46,8 +45,17 @@ wsServer.on('request', (req)=>{
     //Event when connection is closed.
     _connection.on("close", (reasonCode, description)=>{
         console.log(`Client ${_remoteAddress} disconnected at ${functions.useDate()}.`);
-        const index = connectedUsers.findIndex(user => user.remoteAddress === _remoteAddress);
-        connectedUsers[index].connected = false;
+        
+        //Close and delete all websocket connections with that remote address.
+        connections.forEach( (connection, i) => {
+            if(connection.remoteAddress === _remoteAddress){
+                connection.close();
+                connections.splice(i, 1);
+            }
+        });
+        //Set the user as disconnected.
+        const userIndex = connectedUsers.findIndex(user => user.remoteAddress === _remoteAddress);
+        connectedUsers[userIndex].connected = false;
         notifyConnectedUsers();
     });
 });
@@ -86,23 +94,22 @@ app.use((req, res, next)=>{
     res.type('txt').send('Not found');
 });
 
-
 server.listen(app.get('port'), ()=>{
     console.log("Listening in port",app.get('port'));
 })
 
-
 function setConnectedUser(user, connection){
     let index = connectedUsers.findIndex(connectedUser => connectedUser.remoteAddress === connection.remoteAddress);
     if(index === -1){
-        //User not found (disconnected).
+        //User not found. Register the new user.
         user.remoteAddress = connection.remoteAddress;
         connectedUsers.push(user);
     }else{
-        if(user.connected === false){
+        if(connectedUsers[index].connected === false){
             //User disconnected but who was recently connected.
             connectedUsers[index].connected = true;
-        }else if(user.connected === true){
+            connectedUsers[index].userName = user.userName;
+        }else if(connectedUsers[index].connected === true){
             //User already connected.
             connectedUsers[index].connected = true;
             const msg = {
@@ -110,17 +117,16 @@ function setConnectedUser(user, connection){
                 data: connectedUsers[index]
             }
             connection.sendUTF(JSON.stringify(msg));
-            return;
         }
     }
     notifyConnectedUsers();
 }
-function notifyConnectedUsers(connection = null){
+function notifyConnectedUsers(){
     connections.forEach( connection => {
         const response = {
             operation: 'setConnectedUser',
             data: {
-                connectedUsers: connectedUsers
+                connectedUsers
             }
         }
         connection.sendUTF(JSON.stringify(response));

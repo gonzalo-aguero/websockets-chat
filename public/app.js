@@ -1,4 +1,4 @@
-const developmentMode = false;
+const developmentMode = true;
 var userName = null;
 var socket;
 var connectedUsers = [];
@@ -74,7 +74,7 @@ function connect(){
                 break;
             case 'userAlreadyConnected':
                 const user = response.data;
-                alert(`I'm sorry, user already connected as ${user.userName}.`);
+                alert(`User already connected as ${user.userName}.`);
                 userName = user.userName;
                 document.getElementById("userName").value = userName;
                 break;
