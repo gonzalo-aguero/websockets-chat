@@ -1,7 +1,8 @@
+const developmentMode = true;
+var userName = null;
 var socket;
 var connectedUsers = [];
-var chat = [];
-var userName = null;
+
 window.onload = ()=>{
     //Event to connect
     document.getElementById("connectBtn").addEventListener("click", tryConnect);
@@ -11,7 +12,7 @@ window.onload = ()=>{
         sendMessage();
     });
     //Event to close connection
-    document.getElementById("disconnectBtn").addEventListener("click", disconnect);
+    document.getElementById("disconnectBtn").addEventListener("click", ()=> socket.close());
     //Event to send message when Enter is pressed.
     document.getElementById("message").addEventListener("keypress", e =>{
         if(e.key === 'Enter'){
@@ -20,24 +21,34 @@ window.onload = ()=>{
         }
     });
 }
+
+/**
+ * Try to connect to the server.
+ */
 function tryConnect(){
     try{
         connect();
     }catch(error){
-        console.error("Error al intentar conectar.");
+        console.error("Error trying to connect.");
         console.error(error);
-        console.log("Reintentando...");
+        console.log("Retrying...");
         setTimeout(connect, 2000);
     }
 }
+/**
+ * Connect to the server.
+ */
 function connect(){
     const userNameInput = document.getElementById("userName");
     userName = userNameInput.value;
     if(userName === null || userName === ""){
-        alert("Debe escribir su nombre.");
-        return;
+        userName = prompt("Please, write your name.");
+        if(userName === null || userName === ""){
+            return;
+        }
+        userNameInput.value = userName;
     }
-    const server = "wss://gma-chat.herokuapp.com/";//192.168.1.23:3000
+    const server = developmentMode ? "ws://192.168.1.23:3000/" : "wss://gma-chat.herokuapp.com/";
     socket = new WebSocket(server);
     socket.onopen = (e)=>{
         connectedStatus();
@@ -45,22 +56,27 @@ function connect(){
             operation: "setConnectedUser",
             data: {
                 userName,
-                connected: false
+                connected: true
             }
         });
         socket.send(data);
         console.log("Connected");
-        lifePulse();
     }
     socket.onmessage = (e)=>{
         const response = JSON.parse(e.data);
-        console.log("Mensaje del servidor:", response);
+        console.log("Message from server:", response);
         switch (response.operation) {
             case 'setConnectedUser':
                 setConnectedUser(response.data.connectedUsers);
                 break;
-            case 'updateChat':
-                updateChat(response.data.chat);
+            case 'newMessage':
+                newMessage(response.data);
+                break;
+            case 'userAlreadyConnected':
+                const user = response.data;
+                alert(`I'm sorry, user already connected as ${user.userName}.`);
+                userName = user.userName;
+                document.getElementById("userName").value = userName;
                 break;
             default:
                 console.error("Undefined operation");
@@ -72,13 +88,13 @@ function connect(){
         console.log("Disconnected");
     }
     socket.onerror = (e)=>{
-        alert("Ha ocurrido un error.");
+        alert("An error has occurred");
         console.error(e)
     }
 }
-function disconnect(){
-    socket.close();
-}
+/**
+ * Send the message.
+ */
 function sendMessage(){
     const messageInput = document.getElementById("message");
     const message = messageInput.value;
@@ -94,6 +110,10 @@ function sendMessage(){
         messageInput.value = "";
     }
 }
+/**
+ * Print the connected users list.
+ * @param {Array} users 
+ */
 function setConnectedUser(users){
     if(users.length > 0){
         const connectedUsersBlock = document.querySelector("#connectedUsers");
@@ -103,40 +123,41 @@ function setConnectedUser(users){
         let html = "";
         connectedUsers.forEach( user =>{
             html += `
-                <li>
-                    <span class="connectionStatus ${user.connected ? 'connected' : 'disconnected'}"></span>${user.userName}
+                <li class="connectedUser">
+                    <span class="connectionStatus ${user.connected ? 'connected' : 'disconnected'}"></span>
+                    <span class="userName">${user.userName}</span>
                 </li>
             `;
         });
         userList.innerHTML = html;
-        title.innerHTML = `Usuarios conectados (${users.length})`;
+        title.innerHTML = `Connected users (${users.length})`;
     }
     
 }
-function updateChat(newChat){
+/**
+ * It's executed when there's a new message and prints it.
+ * @param {JSON} message 
+ */
+function newMessage(message){
+    const cssClass = message.userName === userName ? 'myMessage' : '';
     const chatHTML = document.querySelector("#chat");
-    chat = newChat;
-    let html = "";
-    chat.forEach( element => {
-        html += `
-            <div>
-                ${element.userName}: ${element.message}
-            </div>
-        `;
-    });
-    const htmlBefore = chatHTML.innerHTML;
-    const htmlAfter = html;
-    chatHTML.innerHTML = html;
-    if(htmlBefore != htmlAfter){
-        chatHTML.scrollTo(0,chatHTML.scrollHeight);
-    }
+    chatHTML.innerHTML += `
+        <div class="${cssClass}">
+            ${message.userName}: ${message.message}
+        </div>
+    `;
+    chatHTML.scrollTo(0,chatHTML.scrollHeight);
 }
+/**
+ * Set the DOM status when the client is connected.
+ */
 function connectedStatus(){
     const connectedUsersBlock = document.getElementById("connectedUsers");
     const connectionStatusHTML = document.getElementById("connectionStatus");
     const connectBtn = document.getElementById("connectBtn");
     const disconnectBtn = document.getElementById("disconnectBtn");
     const userNameInput = document.getElementById("userName");
+    document.getElementById("message").focus();
 
     connectionStatusHTML.classList.replace("disconnected", "connected");
 
@@ -158,7 +179,11 @@ function connectedStatus(){
     `;
 
     connectedUsersBlock.style.display = "block";
+
 }
+/**
+ * Set the DOM status when the client is disconnected.
+ */
 function disconnectedStatus(){
     const connectedUsersBlock = document.getElementById("connectedUsers");
     const connectionStatusHTML = document.getElementById("connectionStatus");
@@ -186,16 +211,4 @@ function disconnectedStatus(){
     `;
 
     connectedUsersBlock.style.display = "none";
-}
-function lifePulse(){
-    setInterval(()=>{
-        const data = JSON.stringify({
-            operation: 'lifePulse',
-            data: {
-                userName,
-                connected: true
-            }
-        });
-        socket.send(data);
-    },100);
 }

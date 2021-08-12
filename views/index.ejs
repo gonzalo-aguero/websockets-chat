@@ -4,30 +4,28 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Group chat</title>
     <link rel="stylesheet" href="assets/styles/index.css">
+    <script src="app.js"></script>
 </head>
 <body>
-    <h1 id="mainTitle">Chat de Gonzalo</h1>
+    <h1 id="mainTitle">Group chat</h1>
     <nav id="chatNavigation">
-        <input type="text" name="userName" id="userName" placeholder="Tu nombre">
-        <button id="connectBtn">Conectar</button>
-        <button id="disconnectBtn" disabled="disabled" style="opacity: .5; cursor: default;">Desconectar</button>
+        <input type="text" name="userName" id="userName" placeholder="Put your name">
+        <button id="connectBtn">Connect</button>
+        <button id="disconnectBtn" disabled="disabled" style="opacity: .5; cursor: default;">Disconnect</button>
         <span class="disconnected connectionStatus" id="connectionStatus"></span>
     </nav>
     <div id="connectedUsers">
-        <h2>Usuarios conectados</h2>
-        <ul>
-            
-        </ul>
+        <h2>Connected users</h2>
+        <ul></ul>
     </div>
     <div id="content">
         <div id="chat"></div>
         <form id="chatForm">
-            <textarea id="message" placeholder="Mensaje"></textarea>
-            <input type="submit" value="Enviar">
+            <textarea id="message" placeholder="Message"></textarea>
+            <input type="submit" value="Send">
         </form>
     </div>
-    <script src="app.js"></script>
 </body>
 </html>

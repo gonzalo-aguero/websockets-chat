@@ -4,42 +4,51 @@ const path = require("path");
 const cors = require('cors');
 const server = require('http').Server(app);
 const WebSocketServer = require("websocket").server;
+const functions = require('./modules/functions');
+
+var connections = [];
 var connectedUsers = []; 
-var chat = [];
-const notifyInterval = 1000;
+
 app.set('port', process.env.PORT || 3000);
 app.use(cors());
 app.use(express.json());
 app.set('view engine', 'ejs');
-app.use(express.static('public_html'));
+app.use(express.static('public'));
+
 const wsServer = new WebSocketServer({
     httpServer: server,
     autoAcceptConnections: false
 });
+
 wsServer.on('request', (req)=>{
     const _connection = req.accept(null, req.origin);
-    notifyConnectedUsers(_connection);
-    notifyChat(_connection);
+    const _remoteAddress = _connection.remoteAddress;
+    connections.push(_connection);
+    console.log(`New client connected at ${functions.useDate()} ---> ${_remoteAddress}`);
+    // notifyConnectedUsers(_connection);
+    
+    //Event when receiving a new message.
     _connection.on("message", (message)=>{
         const data = JSON.parse(message.utf8Data);
         switch (data.operation) {
             case 'setConnectedUser':
-                setConnectedUser(data.data);
+                setConnectedUser(data.data, _connection);
                 break;
             case 'newMessage':
                 newMessage(data.data);
-                break;
-            case 'lifePulse':
-                lifePulse(data.data);
                 break;
             default:
                 console.error("Undefined operation");
                 break;
         }
-        // console.log("Mensaje del cliente", data);
     });
+
+    //Event when connection is closed.
     _connection.on("close", (reasonCode, description)=>{
-        console.log("Client disconnected");
+        console.log(`Client ${_remoteAddress} disconnected at ${functions.useDate()}.`);
+        const index = connectedUsers.findIndex(user => user.remoteAddress === _remoteAddress);
+        connectedUsers[index].connected = false;
+        notifyConnectedUsers();
     });
 });
 
@@ -77,60 +86,56 @@ app.use((req, res, next)=>{
     res.type('txt').send('Not found');
 });
 
-// Expo Fazt
-// app.listen(app.get('port'), ()=>{
-//     console.log("listening in port",app.get('port'));
-// });
-// Expo tutorial de sockets
+
 server.listen(app.get('port'), ()=>{
     console.log("Listening in port",app.get('port'));
 })
 
 
-function setConnectedUser(user){
-    let index = connectedUsers.findIndex(connectedUser => connectedUser.userName === user.userName);
+function setConnectedUser(user, connection){
+    let index = connectedUsers.findIndex(connectedUser => connectedUser.remoteAddress === connection.remoteAddress);
     if(index === -1){
+        //User not found (disconnected).
+        user.remoteAddress = connection.remoteAddress;
         connectedUsers.push(user);
-        setInterval(()=>{
-            index = connectedUsers.findIndex(connectedUser => connectedUser.userName === user.userName);
-            connectedUsers[index].connected = false;
-        },1000);
+    }else{
+        if(user.connected === false){
+            //User disconnected but who was recently connected.
+            connectedUsers[index].connected = true;
+        }else if(user.connected === true){
+            //User already connected.
+            connectedUsers[index].connected = true;
+            const msg = {
+                operation: 'userAlreadyConnected',
+                data: connectedUsers[index]
+            }
+            connection.sendUTF(JSON.stringify(msg));
+            return;
+        }
     }
+    notifyConnectedUsers();
 }
 function notifyConnectedUsers(connection = null){
-    setInterval(()=>{
-        if(connection !== null && connection.connected){
-            const response = {
-                operation: 'setConnectedUser',
-                data: {
-                    connectedUsers: connectedUsers
-                }
+    connections.forEach( connection => {
+        const response = {
+            operation: 'setConnectedUser',
+            data: {
+                connectedUsers: connectedUsers
             }
-            connection.sendUTF(JSON.stringify(response));
         }
-    },notifyInterval);
-}
-function notifyChat(connection = null){
-    setInterval(()=>{
-        if(connection !== null && connection.connected){
-            const response = {
-                operation: 'updateChat',
-                data: {
-                    chat
-                }
-            }
-            connection.sendUTF(JSON.stringify(response));
-        }
-    },notifyInterval);
+        connection.sendUTF(JSON.stringify(response));
+    });
 }
 function newMessage(message){
-    chat.push(message);
-}
-function lifePulse(data){
-    const index = connectedUsers.findIndex(user => user.userName === data.userName);
-    connectedUsers[index] = {
-        userName: data.userName,
-        connected: data.connected
-    }
-
+    connections.forEach( connection => {
+        const msg = {
+            operation: 'newMessage',
+            data: {
+                userName: message.userName,
+                message: message.message
+            }
+        }
+        connection.sendUTF(JSON.stringify(msg));
+        console.log(msg);
+    });
 }

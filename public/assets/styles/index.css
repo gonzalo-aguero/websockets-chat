@@ -15,6 +15,7 @@ body{
     margin: 0;
     margin-bottom: 5em;
     width: 100%;
+    font-size: 1em;
 }
 .connectionStatus{
     width: .75rem;
@@ -42,10 +43,10 @@ body{
 #chatNavigation{
     font-size: 16px;
     display: flex;
-    flex-flow: row nowrap;
+    flex-flow: row wrap;
     justify-content: space-around;
+    gap: .5em;
     align-items: center;
-    width: 100%;
     padding: .75em;
     background-color: var(--darkGrey);
 }
@@ -94,6 +95,7 @@ input#userName{
 
 #content{
     padding: 0 1em;
+    font-size: 1em;
 }
 
 
@@ -107,6 +109,8 @@ input#userName{
     border-radius: .25em;
     overflow:auto;
     padding: .5em;
+    display: flex;
+    flex-flow: column;
 }
 #chat > div{
     background-color: #c4e2ff;
@@ -115,16 +119,18 @@ input#userName{
     padding: .5em;
     border-radius: .5em;
     width: fit-content;
+    align-self: left;
+}
+#chat > .myMessage{
+    align-self: flex-end;
 }
 
 
 #chatForm{
     display: flex;
-    flex-flow: row;
 }
 #chatForm > input,
 #chatForm > textarea{
-    width: 100%;
     resize: none;
     border: .1em var(--borderColor) solid;
     border-radius: .5em;
@@ -133,22 +139,45 @@ input#userName{
     font-size: 1em;
     outline: none;
     padding: .5em;
+    height: 3em;
+
     width: 89%;
     margin-right: 1%;
 }
 #chatForm input[type="submit"]{
     background-color: var(--niceColor);
     color: white;
+    height: 3em;
     font-weight: bold;
     font-size: 1em;
     padding: .5em;
     transition: .15s;
     cursor: pointer;
     width: 10%;
-    border: none;
+    border: none
 }
 #chatForm input[type="submit"]:hover,
 #chatForm input[type="submit"]:active{
     opacity: .8;
     transition: .15s;
+}
+
+
+@media screen and (max-width: 700px){
+    #chatForm textarea{
+        width: 79%;
+    }
+    #chatForm input[type="submit"]{
+        width: 20%;
+    }
+}
+@media screen and (max-width: 400px){
+    body{
+        font-size: .8em;
+    }
+}
+@media screen and (max-width: 300px){
+    body{
+        font-size: .65em;
+    }
 }
