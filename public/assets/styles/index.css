@@ -18,8 +18,8 @@ body{
     font-size: 1em;
 }
 .connectionStatus{
-    width: .75rem;
-    height: .75rem;
+    width: .75em;
+    height: .75em;
     border-radius: 50%;
 }
 .disconnected{
@@ -84,15 +84,19 @@ input#userName{
     display: none;
     padding: 0em 1em;
 }
-#connectedUsers > ul{
-    text-decoration: none;
-    list-style: none;
-    width: 100%;
+#connectedUsersList{
+    display: flex;
+    flex-flow: column;
+    gap: .5em;
 }
-#connectedUsers > ul > li{
-    margin-bottom: .5em;
+#connectedUsersList .connectedUser{
+    display: flex;
+    gap: .25em;
 }
-
+#connectedUsersList .connectedUser .connectionStatus{
+    font-size: .7em;
+    align-self: center;
+}
 #content{
     padding: 0 1em;
     font-size: 1em;

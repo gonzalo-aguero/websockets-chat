@@ -63,34 +63,18 @@ wsServer.on('request', (req)=>{
 
 
 app.get('/', (req, res)=>{
-    const data = {
-        __dirname: __dirname,
-        users: [
-            {
-                name: "Gonzalo",
-                age: 19
-            },
-            {
-                name: "Fauricio",
-                age: 22
-            }
-        ]
-    }
-    res.render('index.ejs', data);
+    res.render('index.ejs');
 });
 app.use((req, res, next)=>{
     res.status(404);
-    // respond with html page
     if (req.accepts('html')) {
         res.render('404', { url: req.url });
         return;
     }
-    // respond with json
     if (req.accepts('json')) {
         res.send({ error: 'Not found' });
         return;
     }
-    // default to plain-text. send()
     res.type('txt').send('Not found');
 });
 
@@ -99,10 +83,32 @@ server.listen(app.get('port'), ()=>{
 })
 
 function setConnectedUser(user, connection){
-    let index = connectedUsers.findIndex(connectedUser => connectedUser.remoteAddress === connection.remoteAddress);
+    const index = connectedUsers.findIndex(connectedUser => connectedUser.remoteAddress === connection.remoteAddress);
     if(index === -1){
         //User not found. Register the new user.
+
         user.remoteAddress = connection.remoteAddress;
+        
+        //The user name must be unique.
+        let nameIndex = connectedUsers.findIndex(connectedUser => connectedUser.userName === user.userName);
+        if(nameIndex !== -1){
+            const originalName = user.userName;
+            let counter = 1;
+            do{
+                counter++;
+                user.userName = originalName + ` (${counter})`;
+                nameIndex = connectedUsers.findIndex(connectedUser => connectedUser.userName === user.userName);
+            }while(nameIndex !== -1);
+
+            //Send to the client the new name.
+            const msg = {
+                operation: 'nameChanged',
+                data: user.userName
+            }
+            connection.sendUTF(JSON.stringify(msg));
+        }
+
+        //Add user to the connected user array.
         connectedUsers.push(user);
     }else{
         if(connectedUsers[index].connected === false){
