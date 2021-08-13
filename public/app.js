@@ -1,8 +1,9 @@
-const developmentMode = false;
+const developmentMode = true;
 var userName = null;
 var socket;
 var connectedUsers = [];
-//Rama dev
+var notify = true;
+
 window.onload = ()=>{
     //Event to connect
     document.getElementById("connectBtn").addEventListener("click", tryConnect);
@@ -51,7 +52,7 @@ function connect(){
     }
     const server = developmentMode ? "ws://192.168.1.23:3000/" : "wss://gma-chat.herokuapp.com/";
     socket = new WebSocket(server);
-    socket.onopen = (e)=>{
+    socket.onopen = async (e)=>{
         connectedStatus();
         const data = JSON.stringify({
             operation: "setConnectedUser",
@@ -62,6 +63,10 @@ function connect(){
         });
         socket.send(data);
         console.log("Connected");
+        const notificationPermission = await Notification.requestPermission();
+        if(notificationPermission === "granted"){
+            notify = true;
+        }
     }
     socket.onmessage = (e)=>{
         const response = JSON.parse(e.data);
@@ -78,6 +83,11 @@ function connect(){
                 alert(`User already connected as ${user.userName}.`);
                 userName = user.userName;
                 document.getElementById("userName").value = userName;
+                break;
+            case 'nameChanged':
+                const newUserName = response.data;
+                userName = newUserName;
+                document.getElementById("userName").value = newUserName;
                 break;
             default:
                 console.error("Undefined operation");
@@ -118,16 +128,16 @@ function sendMessage(){
 function setConnectedUser(users){
     if(users.length > 0){
         const connectedUsersBlock = document.querySelector("#connectedUsers");
-        const userList = connectedUsersBlock.querySelector("ul");
+        const userList = connectedUsersBlock.querySelector("#connectedUsersList");
         const title = connectedUsersBlock.querySelector("h2");
         connectedUsers = users;
         let html = "";
         connectedUsers.forEach( user =>{
             html += `
-                <li class="connectedUser">
+                <div class="connectedUser">
                     <span class="connectionStatus ${user.connected ? 'connected' : 'disconnected'}"></span>
                     <span class="userName">${user.userName}</span>
-                </li>
+                </div>
             `;
         });
         userList.innerHTML = html;
@@ -148,6 +158,10 @@ function newMessage(message){
         </div>
     `;
     chatHTML.scrollTo(0,chatHTML.scrollHeight);
+    //Send notification to the user.
+    if(notify && message.userName !== userName){
+       newMessageNotification(message.userName + ": " + message.message); 
+    }
 }
 /**
  * Set the DOM status when the client is connected.
@@ -212,4 +226,12 @@ function disconnectedStatus(){
     `;
 
     connectedUsersBlock.style.display = "none";
+}
+function newMessageNotification(title = "New message") {
+    // Comprobamos si el navegador soporta las notificaciones
+    if(!("Notification" in window)){
+        alert("Lo sentimos, este navegador no soporta las notificaciones :(");
+        return;
+    }
+    new Notification(title);
 }
