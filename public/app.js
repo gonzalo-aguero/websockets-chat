@@ -72,8 +72,8 @@ function connect(){
         const response = JSON.parse(e.data);
         console.log("Message from server:", response);
         switch (response.operation) {
-            case 'setConnectedUser':
-                setConnectedUser(response.data.connectedUsers);
+            case 'setConnectedUsers':
+                setConnectedUsers(response.data);
                 break;
             case 'newMessage':
                 newMessage(response.data);
@@ -125,7 +125,7 @@ function sendMessage(){
  * Print the connected users list.
  * @param {Array} users 
  */
-function setConnectedUser(users){
+function setConnectedUsers(users){
     if(users.length > 0){
         const connectedUsersBlock = document.querySelector("#connectedUsers");
         const userList = connectedUsersBlock.querySelector("#connectedUsersList");
@@ -228,9 +228,8 @@ function disconnectedStatus(){
     connectedUsersBlock.style.display = "none";
 }
 function newMessageNotification(title = "New message") {
-    // Comprobamos si el navegador soporta las notificaciones
     if(!("Notification" in window)){
-        alert("Lo sentimos, este navegador no soporta las notificaciones :(");
+        alert("Sorry, this browser doesn't support notifications :(");
         return;
     }
     new Notification(title);
