@@ -1,4 +1,4 @@
-const developmentMode = true;
+const developmentMode = false;
 var userName = null;
 var socket;
 var connectedUsers = [];
