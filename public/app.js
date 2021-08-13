@@ -1,4 +1,4 @@
-const developmentMode = true;
+const developmentMode = false;
 var userName = null;
 var socket;
 var connectedUsers = [];
@@ -30,6 +30,7 @@ function tryConnect(){
         connect();
     }catch(error){
         console.error("Error trying to connect.");
+        alert("Error trying to connect.\nWill be tried again in 2 seconds...");
         console.error(error);
         console.log("Retrying...");
         setTimeout(connect, 2000);
