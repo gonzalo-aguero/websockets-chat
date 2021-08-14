@@ -87,7 +87,6 @@ server.listen(app.get('port'), ()=>{
 
 function setConnectedUser(user, connection){
     validateUserName(user, connection);
-
     const index = connectedUsers.findIndex(connectedUser => connectedUser.remoteAddress === connection.remoteAddress);
     if(index === -1){
         //User not found. Register the new user.
@@ -134,12 +133,11 @@ function newMessage(message){
 }
 
 /**
- * 
+ * Validate the username and change it when necessary.
  * @param {JSON} user User data.
  * @param {JSON} connection User connection.
  */
 function validateUserName(user, connection) {
-    console.log(connection)
     //The user name must be unique.
     let nameIndex = connectedUsers.findIndex(connectedUser => connectedUser.userName === user.userName);
     if(nameIndex !== -1){
