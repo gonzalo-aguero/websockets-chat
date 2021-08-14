@@ -61,10 +61,12 @@ wsServer.on('request', (req)=>{
 });
 
 
-
+//Home
 app.get('/', (req, res)=>{
     res.render('index.ejs');
 });
+
+//404
 app.use((req, res, next)=>{
     res.status(404);
     if (req.accepts('html')) {
@@ -78,38 +80,19 @@ app.use((req, res, next)=>{
     res.type('txt').send('Not found');
 });
 
+//Run server
 server.listen(app.get('port'), ()=>{
     console.log("Listening in port",app.get('port'));
 })
 
 function setConnectedUser(user, connection){
+    validateUserName(user, connection);
+
     const index = connectedUsers.findIndex(connectedUser => connectedUser.remoteAddress === connection.remoteAddress);
     if(index === -1){
         //User not found. Register the new user.
-
         user.remoteAddress = connection.remoteAddress;
-        
-        //The user name must be unique.
-        let nameIndex = connectedUsers.findIndex(connectedUser => connectedUser.userName === user.userName);
-        if(nameIndex !== -1){
-            const originalName = user.userName;
-            let counter = 1;
-            do{
-                counter++;
-                user.userName = originalName + ` (${counter})`;
-                nameIndex = connectedUsers.findIndex(connectedUser => connectedUser.userName === user.userName);
-            }while(nameIndex !== -1);
-
-            //Send to the client the new name.
-            const msg = {
-                operation: 'nameChanged',
-                data: user.userName
-            }
-            connection.sendUTF(JSON.stringify(msg));
-        }
-
-        //Add user to the connected user array.
-        connectedUsers.push(user);
+        connectedUsers.push(user);//Add user to the connected users array.
     }else{
         if(connectedUsers[index].connected === false){
             //User disconnected but who was recently connected.
@@ -130,10 +113,8 @@ function setConnectedUser(user, connection){
 function notifyConnectedUsers(){
     connections.forEach( connection => {
         const response = {
-            operation: 'setConnectedUser',
-            data: {
-                connectedUsers
-            }
+            operation: 'setConnectedUsers',
+            data: connectedUsers
         }
         connection.sendUTF(JSON.stringify(response));
     });
@@ -150,4 +131,31 @@ function newMessage(message){
         connection.sendUTF(JSON.stringify(msg));
         console.log(msg);
     });
+}
+
+/**
+ * 
+ * @param {JSON} user User data.
+ * @param {JSON} connection User connection.
+ */
+function validateUserName(user, connection) {
+    console.log(connection)
+    //The user name must be unique.
+    let nameIndex = connectedUsers.findIndex(connectedUser => connectedUser.userName === user.userName);
+    if(nameIndex !== -1){
+        const originalName = user.userName;
+        let counter = 1;
+        do{
+            counter++;
+            user.userName = originalName + ` (${counter})`;
+            nameIndex = connectedUsers.findIndex(connectedUser => connectedUser.userName === user.userName);
+        }while(nameIndex !== -1);
+
+        //Send to the client the new name.
+        const msg = {
+            operation: 'nameChanged',
+            data: user.userName
+        }
+        connection.sendUTF(JSON.stringify(msg));
+    }
 }
