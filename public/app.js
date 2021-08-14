@@ -220,6 +220,7 @@ function disconnectedStatus(){
         cursor: pointer;
     `;
 
+    userNameInput.value = "";
     userNameInput.disabled = false;
     userNameInput.style = `
         opacity: 1;
