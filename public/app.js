@@ -50,7 +50,7 @@ function connect(){
         }
         userNameInput.value = userName;
     }
-    const server = developmentMode ? "ws://192.168.1.23:3000/" : "wss://gma-chat.herokuapp.com/";
+    const server = developmentMode ? "ws://localhost:3000/" : "wss://gma-chat.herokuapp.com/";
     socket = new WebSocket(server);
     socket.onopen = async (e)=>{
         connectedStatus();
