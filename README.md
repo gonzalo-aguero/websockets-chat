@@ -17,9 +17,9 @@ git clone https://github.com/gonzalo90fa/gma-chat.git
 ~~~
 cd gma-chat
 ~~~
-Go to ./public/app.js and change const developmentMode to "true";
+### Go to ./public/app.js and change const developmentMode to "true";
 ~~~
-1 const developmentMode = false; //This line
+1 const developmentMode = false; // Line number 1
 2 var userName = null;
 3 var socket;
 4 var connectedUsers = [];
