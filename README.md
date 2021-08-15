@@ -17,6 +17,15 @@ git clone https://github.com/gonzalo90fa/gma-chat.git
 ~~~
 cd gma-chat
 ~~~
+Go to ./public/app.js and change const developmentMode to "true";
+~~~
+1 const developmentMode = false; //This line
+2 var userName = null;
+3 var socket;
+4 var connectedUsers = [];
+5 var notify = true;
+~~~
+
 ### Initialize the server.
 ~~~
 npm start
