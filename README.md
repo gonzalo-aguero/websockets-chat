@@ -11,11 +11,11 @@ For the development I used Node JS, Express and WebSockets.
 
 ### Clone the repository
 ~~~
-git clone https://github.com/gonzalo90fa/gma-chat.git
+git clone https://github.com/gonzalo90fa/websockets-chat.git
 ~~~
 ### Navigate to cloned repository folder.
 ~~~
-cd gma-chat
+cd websockets-chat
 ~~~
 ### Go to ./public/app.js and change const developmentMode to "true";
 ~~~
